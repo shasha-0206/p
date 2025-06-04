@@ -1,4 +1,15 @@
 // src/components/ChatWindow.tsx
+interface SpeechRecognition {
+    start(): void;
+    stop(): void;
+    continuous: boolean;
+    interimResults: boolean;
+    lang: string;
+    onresult: (event: Event) => void;
+    onerror: (event: Event) => void;
+    onend: () => void;
+}
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, X, Mic, MicOff, ChevronDown, Loader, Maximize, Minimize } from 'lucide-react';
 import EventsDropdown from './EventsDropdown';
