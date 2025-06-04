@@ -12,11 +12,13 @@ interface SpeechRecognition {
 }
 
 // @ts-ignore
-interface Window {
-    webkitSpeechRecognition: typeof SpeechRecognition;
+declare global {
+    interface Window {
+        webkitSpeechRecognition: any;
+    }
 }
 
-declare var webkitSpeechRecognition: typeof SpeechRecognition;
+declare var webkitSpeechRecognition: any;
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, X, Mic, MicOff, ChevronDown, Loader, Maximize, Minimize } from 'lucide-react';
