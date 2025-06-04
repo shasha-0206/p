@@ -1,4 +1,5 @@
 // src/components/ChatWindow.tsx
+// @ts-ignore
 interface SpeechRecognition {
     start(): void;
     stop(): void;
@@ -9,6 +10,13 @@ interface SpeechRecognition {
     onerror: (event: Event) => void;
     onend: () => void;
 }
+
+// @ts-ignore
+interface Window {
+    webkitSpeechRecognition: typeof SpeechRecognition;
+}
+
+declare var webkitSpeechRecognition: typeof SpeechRecognition;
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, X, Mic, MicOff, ChevronDown, Loader, Maximize, Minimize } from 'lucide-react';
