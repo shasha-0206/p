@@ -66,31 +66,34 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onClose, onSendMessag
 
     useEffect(() => {
         if ('webkitSpeechRecognition' in window) {
-            recognitionRef.current = new webkitSpeechRecognition();
-            recognitionRef.current.continuous = false;
-            recognitionRef.current.interimResults = false;
-            recognitionRef.current.lang = 'en-US';
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
 
-            recognitionRef.current.onresult = (event) => {
+            recognition.onresult = (event: any) => {
                 const transcript = event.results[0][0].transcript;
                 setInput(transcript);
                 setIsRecording(false);
             };
 
-            recognitionRef.current.onerror = (event) => {
+            recognition.onerror = (event: any) => {
                 console.error('Speech recognition error:', event.error);
                 setIsRecording(false);
-                onSendMessage('Sorry, I couldn’t understand your speech. Please try typing instead.');
+                onSendMessage('Sorry, I couldn\'t understand your speech. Please try typing instead.');
             };
 
-            recognitionRef.current.onend = () => {
+            recognition.onend = () => {
                 setIsRecording(false);
             };
+
+            recognitionRef.current = recognition;
         }
 
         return () => {
-            if (recognitionRef.current) {
-                recognitionRef.current.stop();
+            const recognition = recognitionRef.current;
+            if (recognition) {
+                recognition.stop();
             }
         };
     }, [onSendMessage]);
