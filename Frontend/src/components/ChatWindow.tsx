@@ -1,24 +1,22 @@
 // src/components/ChatWindow.tsx
-// @ts-ignore
 interface SpeechRecognition {
     start(): void;
     stop(): void;
     continuous: boolean;
     interimResults: boolean;
     lang: string;
-    onresult: (event: Event) => void;
-    onerror: (event: Event) => void;
+    onresult: (event: any) => void;
+    onerror: (event: any) => void;
     onend: () => void;
 }
 
-// @ts-ignore
 declare global {
     interface Window {
-        webkitSpeechRecognition: any;
+        webkitSpeechRecognition: typeof SpeechRecognition;
     }
 }
 
-declare var webkitSpeechRecognition: any;
+declare var webkitSpeechRecognition: typeof SpeechRecognition;
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, X, Mic, MicOff, ChevronDown, Loader, Maximize, Minimize } from 'lucide-react';
@@ -40,12 +38,12 @@ interface ChatWindowProps {
     isTyping: boolean;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onClose, onSendMessage, isTyping }) => {
-    const [input, setInput] = useState('');
-    const [isRecording, setIsRecording] = useState(false);
-    const [isEventsOpen, setIsEventsOpen] = useState(false);
-    const [isClubsOpen, setIsClubsOpen] = useState(false);
-    const [isFullscreen, setIsFullscreen] = useState(false);
+const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onClose, onSendMessage, isTyping }: ChatWindowProps) => {
+    const [input, setInput] = useState<string>('');
+    const [isRecording, setIsRecording] = useState<boolean>(false);
+    const [isEventsOpen, setIsEventsOpen] = useState<boolean>(false);
+    const [isClubsOpen, setIsClubsOpen] = useState<boolean>(false);
+    const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -71,13 +69,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onClose, onSendMessag
             recognition.interimResults = false;
             recognition.lang = 'en-US';
 
-            recognition.onresult = (event: any) => {
+            recognition.onresult = (event: SpeechRecognitionEvent) => {
                 const transcript = event.results[0][0].transcript;
                 setInput(transcript);
                 setIsRecording(false);
             };
 
-            recognition.onerror = (event: any) => {
+            recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
                 console.error('Speech recognition error:', event.error);
                 setIsRecording(false);
                 onSendMessage('Sorry, I couldn\'t understand your speech. Please try typing instead.');
@@ -138,7 +136,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onClose, onSendMessag
     };
 
     const toggleFullscreen = () => {
-        setIsFullscreen((prev) => !prev);
+        setIsFullscreen((prev: boolean) => !prev);
         scrollToBottom();
     };
 
@@ -156,37 +154,24 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onClose, onSendMessag
                 <div className="flex items-center">
                     <h2 className="text-lg font-semibold">Vidya - KMIT Assistant</h2>
                 </div>
-                <div className="flex items-center gap-2">
                     <button
-                        onClick={toggleFullscreen}
-                        className="text-white hover:text-gray-200 p-2 rounded-full bg-kmit-teal/80 hover:bg-kmit-teal"
-                        aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-                        title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => onClose()}
+                        className="p-2 hover:bg-gray-200 rounded-full transition-colors"
                     >
-                        {isFullscreen ? <Minimize size={24} /> : <Maximize size={24} />}
-                    </button>
-                    <button
-                        onClick={onClose}
-                        className="text-white hover:text-gray-200 p-2 rounded-full bg-kmit-teal/80 hover:bg-kmit-teal"
-                        aria-label="Close chat"
-                        title="Close Chat"
-                    >
-                        <X size={24} />
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
-            </div>
 
-            {/* Scrollable Content Area */}
-            <div
-                ref={scrollContainerRef}
-                className="flex-1 overflow-y-auto custom-scrollbar"
+                <div
+                    ref={scrollContainerRef as React.RefObject<HTMLDivElement>}
+                    className="h-full overflow-y-auto p-6 space-y-4"
+                >
                 style={{ minHeight: '0' }}
             >
                 {/* Dropdowns Section */}
                 <div className="border-b">
                     <div className="flex items-center p-3 gap-2">
                         <button
-                            on୍
                             onClick={() => setIsEventsOpen((prev) => !prev)}
                             className="bg-gray-100 hover:bg-gray-200 p-2 rounded-full"
                             aria-label="Upcoming Events"
@@ -246,38 +231,40 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onClose, onSendMessag
                                 <span className="ml-2 text-gray-600">Typing...</span>
                             </div>
                         </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                </div>
-            </div>
-
-            {/* Input Area (Fixed) */}
-            <div className="p-3 border-t flex items-center gap-2 sticky bottom-0 bg-white z-10">
-                <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Type a message..."
-                    className="flex-1 p-2 rounded-full border border-gray-300 focus:outline-none focus:border-kmit-teal"
-                />
-                <button
-                    onClick={toggleRecording}
-                    className={`p-2 rounded-full ${isRecording ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600'
-                        } hover:opacity-90`}
-                    aria-label={isRecording ? 'Stop recording' : 'Start recording'}
-                >
-                    {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
-                </button>
-                <button
-                    onClick={handleSend}
-                    className="bg-kmit-teal hover:bg-kmit-teal/90 text-white p-2 rounded-full"
-                    aria-label="Send message"
-                >
-                    <Send size={20} />
-                </button>
+                    </div>
+                )}
+                <div ref={messagesEndRef} />
             </div>
         </div>
+
+        {/* Input Area (Fixed) */}
+        <div className="p-3 border-t flex items-center gap-2 sticky bottom-0 bg-white z-10">
+            <input
+                type="text"
+                value={input}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type a message..."
+                className="flex-1 p-2 rounded-full border border-gray-300 focus:outline-none focus:border-kmit-teal"
+            />
+            <button
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => toggleRecording()}
+                className={`p-2 rounded-full ${isRecording ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600'
+                    } hover:opacity-90`}
+                aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+            >
+                {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+            </button>
+            <button
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSend()}
+                className="bg-kmit-teal hover:bg-kmit-teal/90 text-white p-2 rounded-full"
+                aria-label="Send message"
+            >
+                <Send size={20} />
+            </button>
+        </div>
+    </div>
+);
     );
 };
 
